@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Popular TV Series</string>
+    <string name="access_token">eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI5NmFhZWRjZmU0Njk4YzAwODkwMmExNmU2YWFhYWNjMSIsInN1YiI6IjY1YWEzZTYyYjBjZDIwMDEzMzE3ZDRjOCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.YmiA9jAR1QMc6s5Y7uETW2x1jz2FSOERS8W4rZgMH6A</string>
+    <string name="base_url">https://api.themoviedb.org/3/</string>
+    <string name="image_base_url">https://image.tmdb.org/t/p/w500</string>
+
+</resources>
