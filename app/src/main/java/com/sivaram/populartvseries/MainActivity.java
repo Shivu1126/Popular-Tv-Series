@@ -7,16 +7,19 @@ import androidx.core.widget.NestedScrollView;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
@@ -24,6 +27,7 @@ import android.widget.Toast;
 import com.akiniyalocts.pagingrecycler.PagingDelegate;
 import com.android.volley.VolleyError;
 import com.sivaram.populartvseries.adapter.HomeTvSeriesAdapter;
+import com.sivaram.populartvseries.database.LocalDB;
 import com.sivaram.populartvseries.model.HomeTvSeries;
 
 import org.json.JSONArray;
@@ -43,10 +47,12 @@ public class MainActivity extends AppCompatActivity implements PagingDelegate.On
     private Context context;
     private VolleyRequest volleyRequest;
     private RecyclerView tvSeriesRecyclerView;
-    private EditText searchBar;
+    private ImageView searchIcon;
     private List<HomeTvSeries> homeTvSeriesList;
     private GridLayoutManager gridLayoutManager;
     private ProgressBar progressBar;
+    private SwipeRefreshLayout refreshLayout;
+    private LocalDB localDB;
 
     private boolean isLoad;
     private int page = 1;
@@ -59,6 +65,7 @@ public class MainActivity extends AppCompatActivity implements PagingDelegate.On
             Intent intent = new Intent(MainActivity.this, TvSeriesDetailsActivity.class );
             intent.putExtra("id", id);
             startActivity(intent);
+            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
         }
     };
 
@@ -66,6 +73,7 @@ public class MainActivity extends AppCompatActivity implements PagingDelegate.On
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
 
         init();
 
@@ -80,17 +88,57 @@ public class MainActivity extends AppCompatActivity implements PagingDelegate.On
                 .listenWith(this)
                 .build();
 
-        getTvSeriesData();
+        searchIcon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(MainActivity.this, SearchActivity.class );
+                startActivity(intent);
+                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+            }
+        });
+        if(Common.getNetWorkStatus((ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE)))
+        {
+            RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) progressBar.getLayoutParams();
+            layoutParams.removeRule(RelativeLayout.CENTER_IN_PARENT);
+            layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+            progressBar.setLayoutParams(layoutParams);
+            progressBar.setVisibility(View.GONE);
+            getTvSeriesData();
+        }
+        else{
+            getTvSeriesFromLocalDb();
+        }
+        refreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                Common.makeToast("Refresh", context);
+                if(Common.getNetWorkStatus((ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE)))
+                {
+                    page=1;
+                    homeTvSeriesList.clear();
+                    getTvSeriesData();
+                }
+                else{
+                    getTvSeriesFromLocalDb();
+                }
+                refreshLayout.setRefreshing(false);
+            }
+        });
     }
     private void init(){
         context = MainActivity.this;
         volleyRequest = new VolleyRequest(this);
         tvSeriesRecyclerView = findViewById(R.id.tv_series_rv);
-        searchBar = findViewById(R.id.searchText);
         homeTvSeriesList = new ArrayList<>();
         isLoad = true;
         progressBar = findViewById(R.id.load_more);
+        searchIcon = findViewById(R.id.search_icon_);
+        refreshLayout = findViewById(R.id.refresh);
+
+        localDB = LocalDB.getInstance(context);
     }
+
+
 
     private void getTvSeriesData(){
         String urlPath = "discover/tv?page="+page;
@@ -121,15 +169,19 @@ public class MainActivity extends AppCompatActivity implements PagingDelegate.On
             JSONArray jsonArray = jsonObject.getJSONArray("results");
             for (int i=0;i<jsonArray.length();i++) {
                 JSONObject obj = jsonArray.getJSONObject(i);
+                String date =
+                        obj.getString("first_air_date").length()!=0?
+                                Common.changeDateFormat(obj.getString("first_air_date")):null;
                 String posterUrl = obj.getString("poster_path").equals("null")?null:
                         (context.getString(R.string.image_base_url)+obj.getString("poster_path"));
-                homeTvSeriesList.add(new HomeTvSeries( obj.getInt("id"),
+
+                HomeTvSeries homeTvSeries = new HomeTvSeries( obj.getInt("id"),
                         posterUrl,
                         obj.getDouble("vote_average"), obj.getString("name"),
-                        Common.changeDateFormat(obj.getString("first_air_date"))
-                    )
+                        date
                 );
-
+                homeTvSeriesList.add(homeTvSeries);
+                localDB.tvSeriesDao().addTvSeries(homeTvSeries);
             }
             homeTvSeriesAdapter.notifyDataSetChanged();
 
@@ -138,6 +190,28 @@ public class MainActivity extends AppCompatActivity implements PagingDelegate.On
             e.printStackTrace();
             Common.makeToast("Data Error", context);
         }
+    }
+
+    private void getTvSeriesFromLocalDb(){
+        Log.d("connection", "NO");
+        homeTvSeriesList.clear();
+        homeTvSeriesList.addAll(localDB.tvSeriesDao().getAllSeries());
+        Log.d("local_db_list_size", homeTvSeriesList.size()+"");
+        if(homeTvSeriesList.isEmpty()){
+            Common.makeToast("Please On the Data", context);
+            RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) progressBar.getLayoutParams();
+            layoutParams.removeRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+            layoutParams.addRule(RelativeLayout.CENTER_IN_PARENT);
+            progressBar.setLayoutParams(layoutParams);
+            progressBar.setVisibility(View.VISIBLE);
+        }else{
+            RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) progressBar.getLayoutParams();
+            layoutParams.removeRule(RelativeLayout.CENTER_IN_PARENT);
+            layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+            progressBar.setLayoutParams(layoutParams);
+            progressBar.setVisibility(View.GONE);
+        }
+        homeTvSeriesAdapter.notifyDataSetChanged();
     }
 
 
@@ -149,8 +223,15 @@ public class MainActivity extends AppCompatActivity implements PagingDelegate.On
                     .postDelayed(new Runnable() {
                         @Override
                         public void run() {
-                            page++;
-                            getTvSeriesData();
+                            if(Common.getNetWorkStatus((ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE)))
+                            {
+                                page++;
+                                getTvSeriesData();
+
+                            }else{
+
+                                Common.makeToast("If you want more series, Please On the Network", context);
+                            }
                             progressBar.setVisibility(View.GONE);
                         }
                     }, 2000);
@@ -160,6 +241,6 @@ public class MainActivity extends AppCompatActivity implements PagingDelegate.On
     @Override
     public void onDonePaging() {
         progressBar.setVisibility(View.GONE);
-//        makeToast("Data Finished..");
     }
+
 }

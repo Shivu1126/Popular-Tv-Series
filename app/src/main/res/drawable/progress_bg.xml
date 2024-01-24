@@ -10,16 +10,13 @@
         android:thicknessRatio="8"
         android:useLevel="false">
 
-        <!--set the size of the shape-->
         <size
             android:width="76dip"
             android:height="76dip" />
 
-        <!--set the color gradients
-            of the shape-->
         <gradient
             android:angle="0"
-            android:endColor="#00ffffff"
+            android:endColor="@color/white"
             android:startColor="@color/card_bg"
             android:type="sweep"
             android:useLevel="false" />

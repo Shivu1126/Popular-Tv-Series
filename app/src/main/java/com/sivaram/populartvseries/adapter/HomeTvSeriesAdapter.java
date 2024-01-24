@@ -1,6 +1,8 @@
 package com.sivaram.populartvseries.adapter;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
+import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,6 +29,7 @@ public class HomeTvSeriesAdapter extends PagingAdapter {
     private Context context;
     private List<HomeTvSeries> homeTvSeriesList;
     private TvSeriesClickListener tvSeriesClickListener;
+
     public HomeTvSeriesAdapter(Context context, List<HomeTvSeries> homeTvSeriesList, TvSeriesClickListener tvSeriesClickListener){
         this.context = context;
         this.homeTvSeriesList = homeTvSeriesList;
@@ -40,7 +43,7 @@ public class HomeTvSeriesAdapter extends PagingAdapter {
     }
 
     @Override
-    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+    public void onBindViewHolder(RecyclerView.ViewHolder holder, @SuppressLint("RecyclerView") int position) {
         HomeTvSeriesHolder homeTvSeriesHolder = (HomeTvSeriesHolder) holder;
         homeTvSeriesHolder.seriesName.setText(homeTvSeriesList.get(position).getSeriesName());
         homeTvSeriesHolder.date.setText(homeTvSeriesList.get(position).getPublishedDate());
@@ -61,6 +64,8 @@ public class HomeTvSeriesAdapter extends PagingAdapter {
                 tvSeriesClickListener.onClick(homeTvSeriesList.get(position).getId());
             }
         });
+
+
 
     }
 

@@ -1,6 +1,8 @@
 package com.sivaram.populartvseries;
 
 import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.widget.Toast;
 
 import java.text.ParseException;
@@ -23,5 +25,24 @@ public class Common {
             e.printStackTrace();
         }
         return outputDateStr;
+    }
+
+    public static boolean getNetWorkStatus(ConnectivityManager conManager){
+        boolean mobileData = false;
+        boolean wifi = false;
+        NetworkInfo[] networkInfo = conManager.getAllNetworkInfo();
+        for (NetworkInfo netInfo : networkInfo) {
+            if (netInfo.getTypeName().equalsIgnoreCase("WIFI")) {
+                if (netInfo.isConnected()) {
+                    mobileData = true;
+                }
+            }
+            else if (netInfo.getTypeName().equalsIgnoreCase("MOBILE")) {
+                if (netInfo.isConnected()) {
+                    wifi = true;
+                }
+            }
+        }
+        return mobileData || wifi;
     }
 }

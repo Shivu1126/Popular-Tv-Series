@@ -180,14 +180,14 @@
                         android:layout_height="45dp"
                         android:indeterminateOnly="false"
                         android:progressDrawable="@drawable/circle_progress"
-                        tools:progress="63"/>
+                        tools:progress="0"/>
 
                     <TextView
                         android:id="@+id/vote_avg"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_centerInParent="true"
-                        android:text="6.3"
+                        android:text="0.0"
                         android:textColor="@color/white"
                         android:textSize="15sp"
                         android:textStyle="bold" />
@@ -578,7 +578,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@color/light_black_bg"
-        android:visibility="gone">
+        android:visibility="visible">
         <ProgressBar
             android:id="@+id/load_more_details"
             android:layout_width="50dp"

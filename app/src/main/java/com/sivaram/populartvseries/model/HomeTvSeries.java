@@ -1,10 +1,26 @@
 package com.sivaram.populartvseries.model;
 
+import androidx.room.ColumnInfo;
+import androidx.room.Entity;
+import androidx.room.PrimaryKey;
+
+@Entity(tableName = "TvSeries")
 public class HomeTvSeries {
+
+    @ColumnInfo(name = "series_id")
+    @PrimaryKey(autoGenerate = false)
     private int id;
+
+    @ColumnInfo(name = "poster_url")
     private String posterUrl;
+
+    @ColumnInfo(name = "vote_avg")
     private double voteAvg;
+
+    @ColumnInfo(name = "series_name")
     private String seriesName;
+
+    @ColumnInfo(name = "publish_date")
     private String publishedDate;
 
     public HomeTvSeries(int id, String posterUrl, double voteAvg, String seriesName, String publishedDate) {

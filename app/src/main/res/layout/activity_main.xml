@@ -10,6 +10,7 @@
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"/>
+
     <RelativeLayout
         android:id="@+id/topbar"
         android:layout_width="match_parent"
@@ -36,28 +37,26 @@
             android:layout_marginEnd="20dp"/>
     </RelativeLayout>
 
-    <ScrollView
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/refresh"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/topbar">
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/tv_series_rv"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"/>
-            <ProgressBar
-                android:id="@+id/load_more"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:layout_marginBottom="20dp"
-                android:layout_gravity="center_horizontal"
-                android:visibility="visible"
-                android:indeterminate="true"
-                android:indeterminateDrawable="@drawable/progress_bg" />
-        </LinearLayout>
-    </ScrollView>
+
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+    <ProgressBar
+        android:id="@+id/load_more"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginBottom="20dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:visibility="visible"
+        android:indeterminate="true"
+        android:indeterminateDrawable="@drawable/progress_bg" />
 </RelativeLayout>
