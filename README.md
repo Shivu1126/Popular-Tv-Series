@@ -38,7 +38,6 @@ This Android application allows users to browse popular TV series, view details,
 
 ## ScreenRecord:
 
-## Zip File
 
 ## .Apk File
 [Link to Download](https://github.com/Shivu1126/Popular-Tv-Series/blob/master/popular-tv-series.apk)
