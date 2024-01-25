@@ -56,16 +56,35 @@ public class HomeTvSeriesAdapter extends PagingAdapter {
             Picasso.get().load(homeTvSeriesList.get(position).getPosterUrl()).into(homeTvSeriesHolder.posterImage);
         }
 
-        homeTvSeriesHolder.voteProgressBar.setProgress((int) homeTvSeriesList.get(position).getVoteAvg()*10);
-
         homeTvSeriesHolder.tvSeriesCard.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 tvSeriesClickListener.onClick(homeTvSeriesList.get(position).getId());
             }
         });
+        int endStatus = (int) homeTvSeriesList.get(position).getVoteAvg()*10;
+        final int[] progressStatus = {0};
+        Handler handler = new Handler();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (progressStatus[0] < endStatus) {
+                    progressStatus[0] += 1;
 
+                    handler.post(new Runnable() {
+                        public void run() {
+                            homeTvSeriesHolder.voteProgressBar.setProgress(progressStatus[0]);
+                        }
+                    });
 
+                    try {
+                        Thread.sleep(25);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }).start();     //For vote average animation
 
     }
 
@@ -79,7 +98,15 @@ public class HomeTvSeriesAdapter extends PagingAdapter {
         return homeTvSeriesList.size();
     }
 
+    @Override
+    public int getItemViewType(int position) {
+        return super.getItemViewType(position);
+    }
 
+    @Override
+    public long getItemId(int position) {
+        return super.getItemId(position);
+    }
 
     class HomeTvSeriesHolder extends RecyclerView.ViewHolder {
 

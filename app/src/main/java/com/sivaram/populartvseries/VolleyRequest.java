@@ -27,7 +27,6 @@ public class VolleyRequest {
 
     public void getRequest(String urlPath, VolleyCallback callback){
         RequestQueue requestQueue = Volley.newRequestQueue(context);
-        SharedPreferences sharedPreferences = context.getSharedPreferences("TvSeriesPreference", Context.MODE_PRIVATE);
         String url = this.context.getString(R.string.base_url)+urlPath;
         Log.d("URL", url);
         StringRequest stringRequest = new StringRequest(Request.Method.GET, url, new Response.Listener<String>() {

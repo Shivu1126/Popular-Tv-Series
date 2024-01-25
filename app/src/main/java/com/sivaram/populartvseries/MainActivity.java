@@ -12,6 +12,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.os.Handler;
@@ -55,9 +56,11 @@ public class MainActivity extends AppCompatActivity implements PagingDelegate.On
     private LocalDB localDB;
 
     private boolean isLoad;
-    private int page = 1;
+    private int page;
 
     private HomeTvSeriesAdapter homeTvSeriesAdapter;
+    private SharedPreferences sharedPreferences;
+    private SharedPreferences.Editor editor;
 
     private final TvSeriesClickListener tvSeriesClickListener = new TvSeriesClickListener() {
         @Override
@@ -74,19 +77,17 @@ public class MainActivity extends AppCompatActivity implements PagingDelegate.On
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
         init();
 
         gridLayoutManager = new GridLayoutManager(context, 2);
         tvSeriesRecyclerView.setLayoutManager(gridLayoutManager);
-        tvSeriesRecyclerView.addItemDecoration(new DividerItemDecoration(this, gridLayoutManager.getOrientation()));
         homeTvSeriesAdapter = new HomeTvSeriesAdapter(context, homeTvSeriesList, tvSeriesClickListener);
         tvSeriesRecyclerView.setAdapter(homeTvSeriesAdapter);
 
         PagingDelegate pagingDelegate = new PagingDelegate.Builder(homeTvSeriesAdapter)
                 .attachTo(tvSeriesRecyclerView)
                 .listenWith(this)
-                .build();
+                .build();                           // For pagination
 
         searchIcon.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -96,7 +97,9 @@ public class MainActivity extends AppCompatActivity implements PagingDelegate.On
                 overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
             }
         });
-        if(Common.getNetWorkStatus((ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE)))
+        page = sharedPreferences.getInt("page_loaded", 1);
+        Log.d("page_", page+"");
+        if(Common.getNetWorkStatus((ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE)) && page==1)
         {
             RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) progressBar.getLayoutParams();
             layoutParams.removeRule(RelativeLayout.CENTER_IN_PARENT);
@@ -112,10 +115,18 @@ public class MainActivity extends AppCompatActivity implements PagingDelegate.On
             @Override
             public void onRefresh() {
                 Common.makeToast("Refresh", context);
-                if(Common.getNetWorkStatus((ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE)))
+                if(Common.getNetWorkStatus((ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE)) && page==1)
                 {
                     page=1;
+                    editor.putInt("page_loaded", page);
+                    editor.commit();
+                    editor.apply();
                     homeTvSeriesList.clear();
+                    RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) progressBar.getLayoutParams();
+                    layoutParams.removeRule(RelativeLayout.CENTER_IN_PARENT);
+                    layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+                    progressBar.setLayoutParams(layoutParams);
+                    progressBar.setVisibility(View.GONE);
                     getTvSeriesData();
                 }
                 else{
@@ -136,13 +147,16 @@ public class MainActivity extends AppCompatActivity implements PagingDelegate.On
         refreshLayout = findViewById(R.id.refresh);
 
         localDB = LocalDB.getInstance(context);
+
+        sharedPreferences = getApplicationContext().getSharedPreferences("PopularTvSeriesApp", MODE_PRIVATE);
+        editor = sharedPreferences.edit();
     }
 
 
 
     private void getTvSeriesData(){
         String urlPath = "discover/tv?page="+page;
-        volleyRequest.getRequest(urlPath, new VolleyCallback() {
+        volleyRequest.getRequest(urlPath, new VolleyCallback() {        //API Call
             @Override
             public void onSuccess(String response) throws JSONException {
                 JSONObject jsonObj = new JSONObject(response.toString());
@@ -193,7 +207,6 @@ public class MainActivity extends AppCompatActivity implements PagingDelegate.On
     }
 
     private void getTvSeriesFromLocalDb(){
-        Log.d("connection", "NO");
         homeTvSeriesList.clear();
         homeTvSeriesList.addAll(localDB.tvSeriesDao().getAllSeries());
         Log.d("local_db_list_size", homeTvSeriesList.size()+"");
@@ -214,10 +227,8 @@ public class MainActivity extends AppCompatActivity implements PagingDelegate.On
         homeTvSeriesAdapter.notifyDataSetChanged();
     }
 
-
-
     @Override
-    public void onPage(int i) {
+    public void onPage(int i) {                     //For pagination
         progressBar.setVisibility(View.VISIBLE);
             new Handler(Looper.myLooper())
                     .postDelayed(new Runnable() {
@@ -225,11 +236,15 @@ public class MainActivity extends AppCompatActivity implements PagingDelegate.On
                         public void run() {
                             if(Common.getNetWorkStatus((ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE)))
                             {
+                                page = sharedPreferences.getInt("page_loaded", 1);
+                                Log.d("prev_page_", page+"");
                                 page++;
+                                editor.putInt("page_loaded", page);
+                                editor.commit();
+                                editor.apply();
+                                Log.d("next_page_", page+"");
                                 getTvSeriesData();
-
                             }else{
-
                                 Common.makeToast("If you want more series, Please On the Network", context);
                             }
                             progressBar.setVisibility(View.GONE);

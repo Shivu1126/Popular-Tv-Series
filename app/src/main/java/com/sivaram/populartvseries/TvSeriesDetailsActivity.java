@@ -7,8 +7,10 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Context;
+import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
@@ -69,7 +71,19 @@ public class TvSeriesDetailsActivity extends AppCompatActivity {
             }
         });
 
-        getTvSeriesDetailsData();
+        if(Common.getNetWorkStatus((ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE)))
+            getTvSeriesDetailsData();
+        else
+        {
+            Common.makeToast("Please check the Network", context);
+            new Handler(Looper.myLooper()).postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    finish();
+                }
+            }, 2000);
+
+        }
 
     }
     private void init(){
@@ -141,7 +155,7 @@ public class TvSeriesDetailsActivity extends AppCompatActivity {
 
                 if(jsonObj.has("success")){
                     loadMoreLayout.setVisibility(View.VISIBLE);
-                    makeToast("Please check the Network");
+                    Common.makeToast("Please check the Network", context);
                 }
                 else{
                     loadMoreLayout.setVisibility(View.GONE);
@@ -154,7 +168,7 @@ public class TvSeriesDetailsActivity extends AppCompatActivity {
             }
             @Override
             public void onError(VolleyError error) throws JSONException {
-                makeToast("Please check the ID");
+                Common.makeToast("Please check the Network", context);
                 Log.d("volley-error", error.getMessage());
             }
         });
@@ -280,7 +294,6 @@ public class TvSeriesDetailsActivity extends AppCompatActivity {
             }
 
             int endStatus = (int) jsonObj.getDouble("vote_average")*10;
-            double end = Double.parseDouble(voteAvgTv.getText().toString());
 
             Handler handler = new Handler();
             new Thread(new Runnable() {
@@ -337,7 +350,7 @@ public class TvSeriesDetailsActivity extends AppCompatActivity {
 
             @Override
             public void onError(VolleyError error) throws JSONException {
-                makeToast("Please check the ID");
+                Common.makeToast("Please check the Network", context);
                 Log.d("volley-error", error.getMessage());
             }
         });
@@ -365,9 +378,5 @@ public class TvSeriesDetailsActivity extends AppCompatActivity {
     public void finish() {
         super.finish();
         overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
-    }
-
-    public void makeToast(String msg){
-        Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
     }
 }

@@ -161,7 +161,7 @@ public class SearchActivity extends AppCompatActivity {
     private void getSearchData(String searchStr){
 
         String urlPath = "search/tv?query="+searchStr;
-        volleyRequest.getRequest(urlPath, new VolleyCallback() {
+        volleyRequest.getRequest(urlPath, new VolleyCallback() {        //API Call
 
             @Override
             public void onSuccess(String response) throws JSONException {
