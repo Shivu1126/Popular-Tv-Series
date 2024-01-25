@@ -17,10 +17,6 @@ This Android application allows users to browse popular TV series, view details,
 - **RecyclerView:** Utilizes RecyclerView for efficient and flexible list display.
 - **User-Friendly UI:** Designed with a focus on user experience and ease of use.
 
-
-## Getting Started:
-
-
 ## Usage:
 
 - Upon launching the app, popular TV series are displayed.
@@ -37,7 +33,7 @@ This Android application allows users to browse popular TV series, view details,
 - Android Support Library: Included in Android Studio by default.
 
 ## ScreenRecord:
-
+[Open Video](https://youtu.be/9sYOTvncg94)
 
 ## .Apk File
 [Link to Download](https://github.com/Shivu1126/Popular-Tv-Series/blob/master/popular-tv-series.apk)
